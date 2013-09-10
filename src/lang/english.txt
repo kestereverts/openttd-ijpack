@@ -1503,6 +1503,18 @@ STR_CONFIG_SETTING_CYCLE_SIGNAL_NORMAL                          :Block signals o
 STR_CONFIG_SETTING_CYCLE_SIGNAL_PBS                             :Path signals only
 STR_CONFIG_SETTING_CYCLE_SIGNAL_ALL                             :All
 
+STR_CONFIG_SETTING_SHARING_RAIL                                 :Enable sharing of railways: {STRING2}
+STR_CONFIG_SETTING_SHARING_ROAD                                 :Enable sharing of road stops and depots: {STRING2}
+STR_CONFIG_SETTING_SHARING_WATER                                :Enable sharing of docks and ship depots: {STRING2}
+STR_CONFIG_SETTING_SHARING_AIR                                  :Enable sharing of airports: {STRING2}
+STR_CONFIG_SETTING_SHARING_FEE_RAIL                             :Daily track toll for trains: {STRING2} per 1000 tonnes
+STR_CONFIG_SETTING_SHARING_FEE_ROAD                             :Stopping fee for road vehicles: {STRING2} per day
+STR_CONFIG_SETTING_SHARING_FEE_WATER                            :Docking fee for ships: {STRING2} per day
+STR_CONFIG_SETTING_SHARING_FEE_AIR                              :Terminal fee for aircraft: {STRING2} per day
+STR_CONFIG_SETTING_SHARING_PAYMENT_IN_DEBT                      :Allow companies in debt to pay sharing fees: {STRING2}
+STR_CONFIG_SETTING_SHARING_USED_BY_VEHICLES                     :Can't change this setting, vehicles are using shared infrastructure.
+STR_CONFIG_SETTING_SHARING_ORDERS_TO_OTHERS                     :Can't change this setting, vehicles have orders to destinations of others.
+
 STR_CONFIG_SETTING_TOWN_LAYOUT                                  :Road layout for new towns: {STRING2}
 STR_CONFIG_SETTING_TOWN_LAYOUT_HELPTEXT                         :Layout for the road network of towns
 STR_CONFIG_SETTING_TOWN_LAYOUT_DEFAULT                          :Original
@@ -1641,6 +1653,7 @@ STR_CONFIG_SETTING_NEWS                                         :{ORANGE}News an
 STR_CONFIG_SETTING_CONSTRUCTION_SIGNALS                         :{ORANGE}Signals
 STR_CONFIG_SETTING_STATIONS_CARGOHANDLING                       :{ORANGE}Cargo handling
 STR_CONFIG_SETTING_AI_NPC                                       :{ORANGE}Computer players
+STR_CONFIG_SETTING_SHARING                                      :{ORANGE}Infrastructure sharing
 STR_CONFIG_SETTING_VEHICLES_AUTORENEW                           :{ORANGE}Autorenew
 STR_CONFIG_SETTING_VEHICLES_SERVICING                           :{ORANGE}Servicing
 STR_CONFIG_SETTING_VEHICLES_ROUTING                             :{ORANGE}Routing
@@ -3130,6 +3143,8 @@ STR_FINANCES_SECTION_AIRCRAFT_INCOME                            :{GOLD}Aircraft 
 STR_FINANCES_SECTION_SHIP_INCOME                                :{GOLD}Ship Income
 STR_FINANCES_SECTION_LOAN_INTEREST                              :{GOLD}Loan Interest
 STR_FINANCES_SECTION_OTHER                                      :{GOLD}Other
+STR_FINANCES_SECTION_INFRASTRUCTURE_COSTS                       :{GOLD}Infrastructure Sharing Costs
+STR_FINANCES_SECTION_INFRASTRUCTURE_INCOME                      :{GOLD}Infrastructure Sharing Income
 STR_FINANCES_NEGATIVE_INCOME                                    :{BLACK}-{CURRENCY_LONG}
 STR_FINANCES_POSITIVE_INCOME                                    :{BLACK}+{CURRENCY_LONG}
 STR_FINANCES_TOTAL_CAPTION                                      :{WHITE}Total:
