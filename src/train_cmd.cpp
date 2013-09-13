@@ -3524,7 +3524,7 @@ bool TrainController(Train *v, Vehicle *nomove, bool reverse)
 				/* Prevent v->UpdateInclination() being called with wrong parameters.
 				 * This could happen if the train was reversed inside the tunnel/bridge. */
 				if (gp.old_tile == gp.new_tile) {
-					//gp.old_tile = GetOtherTunnelBridgeEnd(gp.old_tile);
+					gp.old_tile = GetOtherTunnelBridgeEnd(gp.old_tile);
 				}
 			} else {
 				v->x_pos = gp.x;
