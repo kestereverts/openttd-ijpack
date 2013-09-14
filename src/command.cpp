@@ -189,6 +189,7 @@ CommandProc CmdChangeTimetable;
 CommandProc CmdSetVehicleOnTime;
 CommandProc CmdAutofillTimetable;
 CommandProc CmdSetTimetableStart;
+CommandProc CmdReinitSeparation;
 
 CommandProc CmdOpenCloseAirport;
 
@@ -342,6 +343,7 @@ static const Command _command_proc_table[] = {
 	DEF_CMD(CmdSetVehicleOnTime,                               0, CMDT_ROUTE_MANAGEMENT      ), // CMD_SET_VEHICLE_ON_TIME
 	DEF_CMD(CmdAutofillTimetable,                              0, CMDT_ROUTE_MANAGEMENT      ), // CMD_AUTOFILL_TIMETABLE
 	DEF_CMD(CmdSetTimetableStart,                              0, CMDT_ROUTE_MANAGEMENT      ), // CMD_SET_TIMETABLE_START
+	DEF_CMD(CmdReinitSeparation,                               0, CMDT_ROUTE_MANAGEMENT      ), // CMD_REINIT_SEPARATION
 
 	DEF_CMD(CmdOpenCloseAirport,                               0, CMDT_ROUTE_MANAGEMENT      ), // CMD_OPEN_CLOSE_AIRPORT
 };
