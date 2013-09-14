@@ -177,7 +177,7 @@ protected:
 		this->story_page_elements.ForceRebuild();
 		this->BuildStoryPageElementList();
 
-		this->vscroll->SetCount(this->CountLines());
+		this->vscroll->SetCount(this->GetContentHeight());
 		this->SetWidgetDirty(WID_SB_SCROLLBAR);
 		this->SetWidgetDirty(WID_SB_SEL_PAGE);
 		this->SetWidgetDirty(WID_SB_PAGE_PANEL);
@@ -268,24 +268,24 @@ protected:
 	}
 
 	/**
-	 * Counts how many lines that are used by Date and Title
+	 * Counts how many pixels of height that are used by Date and Title
 	 * (excluding marginal after Title, as each body element has
 	 * an empty row before the elment).
 	 * @param max_width Available width to display content.
-	 * @return the number of lines.
+	 * @return the height in pixels.
 	 */
-	uint CountHeadLines(int max_width)
+	uint GetHeadHeight(int max_width) const
 	{
 		StoryPage *page = this->GetSelPage();
 		if (page == NULL) return 0;
-		int num_lines = 0;
+		int height = 0;
 
 		/* Title lines */
-		num_lines += 1; // Date always use exactly one line.
+		height += FONT_HEIGHT_NORMAL; // Date always use exactly one line.
 		SetDParamStr(0, page->title != NULL ? page->title : this->selected_generic_title);
-		num_lines += GetStringLineCount(STR_STORY_BOOK_TITLE, max_width);
+		height += GetStringHeight(STR_STORY_BOOK_TITLE, max_width);
 
-		return num_lines;
+		return height;
 	}
 
 	/**
@@ -310,25 +310,23 @@ protected:
 	}
 
 	/**
-	 * Count the number of lines used by a given page element.
+	 * Get the height in pixels used by a page element.
 	 * @param pe The story page element.
 	 * @param max_width Available width to display content.
-	 * @return the number of lines.
+	 * @return the height in pixels.
 	 */
-	uint CountPageElementLines(const StoryPageElement &pe, int max_width)
+	uint GetPageElementHeight(const StoryPageElement &pe, int max_width)
 	{
 		switch (pe.type) {
 			case SPET_TEXT:
 				SetDParamStr(0, pe.text);
-				return GetStringLineCount(STR_BLACK_RAW_STRING, max_width);
+				return GetStringHeight(STR_BLACK_RAW_STRING, max_width);
 				break;
 
 			case SPET_GOAL:
 			case SPET_LOCATION: {
 				Dimension sprite_dim = GetSpriteSize(GetPageElementSprite(pe));
-				int line_height = GetStringHeight(STR_JUST_NOTHING, INT_MAX);
-				if (line_height == 0) return 1;
-				return max((uint)1, sprite_dim.height / (uint)line_height);
+				return sprite_dim.height;
 				break;
 			}
 			default:
@@ -337,27 +335,28 @@ protected:
 	}
 
 	/**
-	 * Count the number of lines in this window.
-	 * @return the number of lines.
+	 * Get the total height of the content displayed
+	 * in this window.
+	 * @return the height in pixels
 	 */
-	uint CountLines()
+	uint GetContentHeight()
 	{
 		StoryPage *page = this->GetSelPage();
 		if (page == NULL) return 0;
 		int max_width = GetAvailablePageContentWidth();
+		uint element_vertical_dist = FONT_HEIGHT_NORMAL;
 
-		/* Head lines */
-		int num_lines = CountHeadLines(max_width);
+		/* Head */
+		uint height = GetHeadHeight(max_width);
 
-		/* Body lines */
+		/* Body */
 		for (const StoryPageElement **iter = this->story_page_elements.Begin(); iter != this->story_page_elements.End(); iter++) {
 			const StoryPageElement *pe = *iter;
-			num_lines += 1; // For the space between previous element and current element.
-
-			num_lines += CountPageElementLines(*pe, max_width);
+			height += element_vertical_dist;
+			height += GetPageElementHeight(*pe, max_width);
 		}
 
-		return num_lines;
+		return height;
 	}
 
 	/**
@@ -368,18 +367,19 @@ protected:
 	 * @param width Width of the region available for drawing.
 	 * @param line_height Height of one line of text.
 	 * @param action_sprite The sprite to draw.
+	 * @param string_id The string id to draw.
 	 * @return the number of lines.
 	 */
-	void DrawActionElement(int &y_offset, int width, int line_height, SpriteID action_sprite) const
+	void DrawActionElement(int &y_offset, int width, int line_height, SpriteID action_sprite, StringID string_id = STR_JUST_RAW_STRING) const
 	{
 		Dimension sprite_dim = GetSpriteSize(action_sprite);
-		uint element_height = max((uint)1, sprite_dim.height / (uint)line_height) * line_height;
+		uint element_height = max(sprite_dim.height, (uint)line_height);
 
 		uint sprite_top = y_offset + (element_height - sprite_dim.height) / 2;
 		uint text_top = y_offset + (element_height - line_height) / 2;
 
 		DrawSprite(action_sprite, PAL_NONE, 0, sprite_top);
-		DrawString(sprite_dim.width + WD_FRAMETEXT_LEFT, width, text_top, STR_JUST_RAW_STRING, TC_BLACK);
+		DrawString(sprite_dim.width + WD_FRAMETEXT_LEFT, width, text_top, string_id, TC_BLACK);
 
 		y_offset += element_height;
 	}
@@ -417,6 +417,7 @@ public:
 	{
 		this->CreateNestedTree();
 		this->vscroll = this->GetScrollbar(WID_SB_SCROLLBAR);
+		this->vscroll->SetStepSize(FONT_HEIGHT_NORMAL);
 
 		/* Initalize page sort. */
 		this->story_pages.SetSortFuncs(StoryBookWindow::page_sorter_funcs);
@@ -426,6 +427,7 @@ public:
 		/* story_page_elements will get built by SetSelectedPage */
 
 		this->FinishInitNested(window_number);
+		this->owner = (Owner)this->window_number;
 
 		/* Initialize selected vars. */
 		this->selected_generic_title[0] = '\0';
@@ -497,8 +499,8 @@ public:
 		_cur_dpi = &tmp_dpi;
 
 		/* Draw content (now coordinates given to Draw** are local to the new clipping region). */
-		int line_height = GetStringHeight(STR_JUST_NOTHING, INT_MAX);
-		int y_offset = - this->vscroll->GetPosition() * line_height;
+		int line_height = FONT_HEIGHT_NORMAL;
+		int y_offset = - this->vscroll->GetPosition();
 
 		/* Date */
 		SetDParam(0, page->date);
@@ -522,12 +524,9 @@ public:
 
 				case SPET_GOAL: {
 					Goal *g = Goal::Get((GoalID) pe->referenced_id);
-					if (g != NULL) {
-						SetDParamStr(0, g->text);
-						DrawActionElement(y_offset, right - x, line_height, GetPageElementSprite(*pe));
-					} else {
-						y_offset += line_height;
-					}
+					StringID string_id = g == NULL ? STR_STORY_BOOK_INVALID_GOAL_REF : STR_JUST_RAW_STRING;
+					if (g != NULL) SetDParamStr(0, g->text);
+					DrawActionElement(y_offset, right - x, line_height, GetPageElementSprite(*pe), string_id);
 					break;
 				}
 
@@ -548,7 +547,8 @@ public:
 	{
 		if (widget != WID_SB_SEL_PAGE && widget != WID_SB_PAGE_PANEL) return;
 
-		Dimension d = GetStringBoundingBox(STR_JUST_NOTHING);
+		Dimension d;
+		d.height= FONT_HEIGHT_NORMAL;
 		d.width = 0;
 
 		switch(widget) {
@@ -577,8 +577,6 @@ public:
 			}
 
 			case WID_SB_PAGE_PANEL: {
-				resize->height = d.height;
-
 				d.height *= 5;
 				d.height += padding.height + WD_FRAMETEXT_TOP + WD_FRAMETEXT_BOTTOM;
 				*size = maxdim(*size, d);
@@ -591,7 +589,7 @@ public:
 	virtual void OnResize()
 	{
 		this->vscroll->SetCapacityFromWidget(this, WID_SB_PAGE_PANEL, WD_FRAMETEXT_TOP + WD_FRAMETEXT_BOTTOM);
-		this->vscroll->SetCount(this->CountLines());
+		this->vscroll->SetCount(this->GetContentHeight());
 	}
 
 	virtual void OnClick(Point pt, int widget, int click_count)
@@ -622,27 +620,28 @@ public:
 				break;
 
 			case WID_SB_PAGE_PANEL: {
-				uint clicked_row = this->vscroll->GetScrolledRowFromWidget(pt.y, this, WID_SB_PAGE_PANEL, WD_FRAMETEXT_TOP);
+				uint clicked_y = this->vscroll->GetScrolledRowFromWidget(pt.y, this, WID_SB_PAGE_PANEL, WD_FRAMETEXT_TOP);
 				uint max_width = GetAvailablePageContentWidth();
 
 				/* Skip head rows. */
-				uint n_head_rows = this->CountHeadLines(max_width);
-				if (clicked_row < n_head_rows) return;
+				uint head_height = this->GetHeadHeight(max_width);
+				if (clicked_y < head_height) return;
 
 				/* Detect if a page element was clicked. */
-				uint row = n_head_rows;
+				uint y = head_height;
+				uint element_vertical_dist = FONT_HEIGHT_NORMAL;
 				for (const StoryPageElement *const*iter = this->story_page_elements.Begin(); iter != this->story_page_elements.End(); iter++) {
 					const StoryPageElement *const pe = *iter;
 
-					row += 1; // margin row
+					y += element_vertical_dist; // margin row
 
-					uint content_rows = CountPageElementLines(*pe, max_width);
-					if (clicked_row >= row && clicked_row < row + content_rows) {
+					uint content_height = GetPageElementHeight(*pe, max_width);
+					if (clicked_y >= y && clicked_y < y + content_height) {
 						this->OnPageElementClick(*pe);
 						return;
 					}
 
-					row += content_rows;
+					y += content_height;
 				}
 			}
 		}
